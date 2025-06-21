@@ -2,7 +2,7 @@ import { homeView } from 'home';
 import { categoryView } from 'category';
 import { CartView } from 'cart';
 import { myView } from 'my';
-import { Logger } from 'basic'
+import { BreakPointType, Logger } from 'basic'
 
 interface TabItem {
   text: string
@@ -13,7 +13,7 @@ interface TabItem {
 @Entry
 @Component
 struct Index {
-
+  @StorageProp('currentBreakpoint') breakPoint: string = 'xs'
   aboutToAppear(): void {
     Logger.info({
       name: 'jack',
@@ -51,6 +51,12 @@ struct Index {
     .onTabBarClick(index => {
       this.activeIndex = index
     })
+    .barPosition(new BreakPointType({
+      'sm': BarPosition.End,
+      'md': BarPosition.End,
+      'lg': BarPosition.Start
+    }).getValue(this.breakPoint))
+    .vertical(this.breakPoint == 'lg' ? true : false)
   }
 
   @Builder
