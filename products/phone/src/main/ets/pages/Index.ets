@@ -2,6 +2,7 @@ import { homeView } from 'home';
 import { categoryView } from 'category';
 import { CartView } from 'cart';
 import { myView } from 'my';
+import { Logger } from 'basic'
 
 interface TabItem {
   text: string
@@ -12,6 +13,14 @@ interface TabItem {
 @Entry
 @Component
 struct Index {
+
+  aboutToAppear(): void {
+    Logger.info({
+      name: 'jack',
+      age: 18
+    })
+  }
+
   @State message: string = 'Hello World';
   @State activeIndex: number = 0
   list: TabItem[] = [
