@@ -1,6 +1,7 @@
 import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
+import { BreakpointConstants } from 'basic';
 
 const DOMAIN = 0x0000;
 
@@ -13,13 +14,13 @@ export default class EntryAbility extends UIAbility {
     let windowWidthVp = px2vp(windowWidth)
     let newBp: string = ''
     if (windowWidthVp < 320) {
-      newBp = 'xs'
+      newBp = BreakpointConstants.XS
     } else if (windowWidthVp < 600) {
-      newBp = 'sm'
+      newBp = BreakpointConstants.SM
     } else if (windowWidthVp < 840) {
-      newBp = 'md'
+      newBp = BreakpointConstants.MD
     } else {
-      newBp = 'lg'
+      newBp = BreakpointConstants.LG
     }
     if (this.curBp !== newBp) {
       this.curBp = newBp
