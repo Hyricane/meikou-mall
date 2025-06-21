@@ -5,5 +5,12 @@
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    // 模块名称: 模块路径
+    "basic": "file:../../commons/basic",
+    "home": "file:../../features/home",
+    "cart": "file:../../features/cart",
+    "category": "file:../../features/category",
+    "my": "file:../../features/my"
+  }
 }
