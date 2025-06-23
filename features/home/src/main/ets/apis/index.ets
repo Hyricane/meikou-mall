@@ -1,5 +1,5 @@
 import { RequestAxios } from 'basic'
-import { Banner, CategoryItem, HotResult } from '../viewmodel'
+import { Banner, CategoryItem, HotResult, MkGoodsItem } from '../viewmodel'
 
 export const getBannerApi = () => {
   return RequestAxios.get<Banner[]>('/home/banner')
@@ -22,4 +22,8 @@ export const getHotInVogueApi = () => {
 // 首页-一站买全
 export const getHotOneStopApi = () => {
   return RequestAxios.get<HotResult>('/hot/oneStop')
+}
+// 获取新鲜好物数据
+export const getNewApi = () => {
+  return RequestAxios.get<MkGoodsItem[]>('/home/new')
 }

@@ -107,6 +107,9 @@ export struct homeView {
     if (resArr[4].status == 'fulfilled') {
       this.oneGoods = (resArr[4].value.data.result as HotResult).subTypes[0].goodsItems.items
     }
+    if (resArr[5].status == 'fulfilled') {
+      this.newGoods = resArr[5].value.data.result as MkGoodsItem[]
+    }
   }
 
   @Builder
