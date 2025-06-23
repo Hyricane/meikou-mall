@@ -2,7 +2,10 @@ import { axiosInstance, BreakpointConstants, BreakPointType, Logger, RequestAxio
 import { DiscountGoodsComp, DiscountType } from '../components/DiscountGoodsComp'
 import { MkGoods } from '../components/MkGoods'
 import { Banner, CategoryItem, HotResult, MkGoodsItem, Params } from '../viewmodel'
-import { getBannerApi,getCategoryApi, getHotInVogueApi, getHotOneStopApi, getHotPreferenceApi } from '../apis'
+import { getBannerApi,getCategoryApi, getHotInVogueApi, getHotOneStopApi, getHotPreferenceApi,
+  getNewApi,
+  getRecommendApi} from '../apis'
+import { promptAction } from '@kit.ArkUI'
 
 
 @Component
@@ -22,6 +25,7 @@ export struct homeView {
   // 推荐商品
   @State recommendGoods: MkGoodsItem[] = []
 
+  @StorageProp('safeTop') safeTop:number = 0
   @StorageProp(BreakpointConstants.BREAK_POINT_KEY) breakPoint: string = ''
   // 生成模拟数据
   // mockData() {
@@ -88,7 +92,7 @@ export struct homeView {
 
   // 使用 Promise.allSettled 管理多个请求
   async getData() {
-    const proArr = [getBannerApi(), getCategoryApi(), getHotPreferenceApi(), getHotInVogueApi(), getHotOneStopApi()]
+    const proArr = [getBannerApi(), getCategoryApi(), getHotPreferenceApi(), getHotInVogueApi(), getHotOneStopApi(),getNewApi(),getRecommendApi()]
     // allSettled 可以获取到每个请求状态成功或失败
     const resArr = await Promise.allSettled(proArr)
 
@@ -110,7 +114,27 @@ export struct homeView {
     if (resArr[5].status == 'fulfilled') {
       this.newGoods = resArr[5].value.data.result as MkGoodsItem[]
     }
+    if (resArr[6].status == 'fulfilled') {
+      this.recommendGoods = resArr[6].value.data.result as MkGoodsItem[]
+    }
   }
+
+  // 页码
+  page: number = 1
+
+  // 滚动触底，加载更多，在 onReachEnd 中调用
+  async getMoreData() {
+    // 页码累加
+    this.page++
+    // 允许继续加载的条件
+    if (this.recommendGoods.length < 30) {
+      const res = await getRecommendApi(this.page * 8)//假设8条为一页,每次触底更新8的倍数条数据
+      this.recommendGoods = res.data.result
+    } else {
+      promptAction.showToast({ message: '没有更多啦' })
+    }
+  }
+
 
   @Builder
   DiscountBuilder(params: Params) {
@@ -343,7 +367,11 @@ export struct homeView {
           top: 10
         })
       }
+      .padding({top:this.safeTop})
     }
     .scrollBar(BarState.Off)
+    .onReachEnd(()=>{
+      this.getMoreData()
+    })
   }
 }

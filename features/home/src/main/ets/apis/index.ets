@@ -27,3 +27,7 @@ export const getHotOneStopApi = () => {
 export const getNewApi = () => {
   return RequestAxios.get<MkGoodsItem[]>('/home/new')
 }
+//获取推荐列表数据
+export const getRecommendApi = (limit: number = 8) => {
+  return RequestAxios.get<MkGoodsItem[]>('/home/recommend', new Object({ limit }))
+}
