@@ -1,3 +1,4 @@
+import { BreakpointConstants, BreakPointType } from 'basic'
 import { DiscountGoodsComp, DiscountType } from '../components/DiscountGoodsComp'
 import { MkGoods } from '../components/MkGoods'
 import { Banner, CategoryItem, MkGoodsItem, Params } from '../viewmodel'
@@ -20,6 +21,7 @@ export struct homeView {
   // 推荐商品
   @State recommendGoods: MkGoodsItem[] = []
 
+  @StorageProp(BreakpointConstants.BREAK_POINT_KEY) breakPoint: string = ''
   // 生成模拟数据
   mockData() {
     this.banners = new Array(6).fill({
@@ -118,6 +120,10 @@ export struct homeView {
     .borderRadius(8)
   }
 
+  getSpace(): number | undefined {
+    return new BreakPointType({ 'sm': 14, 'md': 36, 'lg': 72 }).getValue(this.breakPoint)
+  }
+
   build() {
     Scroll() {
       Column() {
@@ -129,13 +135,29 @@ export struct homeView {
             })
           }
           .indicator(
-            DotIndicator.dot()
+            this.breakPoint == BreakpointConstants.SM ? DotIndicator.dot()
               .itemWidth(8)
               .itemHeight(4)
               .color('#33191919')
               .selectedItemWidth(24)
               .selectedItemHeight(4)
-              .selectedColor('#191919')
+              .selectedColor('#191919') :  false
+          )
+          .displayCount(
+            new BreakPointType({
+              'sm': 1,
+              'md': 2,
+              'lg': 3
+            })
+              .getValue(this.breakPoint)
+          )
+          .itemSpace(
+            new BreakPointType({
+              'sm': 0,
+              'md': 10,
+              'lg': 20
+            })
+              .getValue(this.breakPoint)
           )
 
           Row() {
@@ -162,7 +184,7 @@ export struct homeView {
         // 分类
         Column({ space: 10 }) {
           // 分类
-          List({ space: 16 }) {
+          List({ space: this.getSpace()}) {
             ForEach(this.categories, (item: CategoryItem) => {
               ListItem() {
                 Column() {
@@ -195,7 +217,7 @@ export struct homeView {
           .alignListItem(ListItemAlign.Center)
 
           // 特惠推荐
-          Column({ space: 10 }) {
+          Column({ space: this.getSpace() }) {
             Image($r('app.media.home_cmd_title'))
               .width(150)
               .height(20)
@@ -248,7 +270,7 @@ export struct homeView {
           }
 
           // 新鲜好物
-          Column({ space: 10 }) {
+          Column({ space: this.getSpace() }) {
             Image($r('app.media.home_new'))
               .width(146)
               .height(19)
@@ -279,7 +301,11 @@ export struct homeView {
               }
             })
           }
-          .columnsTemplate('1fr 1fr')
+          .columnsTemplate(new BreakPointType({
+            'sm': '1fr 1fr',
+            'md': '1fr 1fr 1fr',
+            'lg': '1fr 1fr 1fr 1fr'
+          }).getValue(this.breakPoint))
           .columnsGap(8)
           .rowsGap(10)
 
