@@ -17,22 +17,20 @@ interface HttpResponse<T> {
 export type ResponseType<T> = AxiosResponse<HttpResponse<T>>
 
 export class RequestAxios {
-  // get -> params -> { params: {} }
-  static get<T>(url: string, params?: object): Promise<T> {
-    return axiosInstance.get<null, T>(url, { params })
+  // {} => {params: {}}
+  // const res = await xx.get()    res.data.result
+  static get<T>(url: string, params?: object): Promise<ResponseType<T>> {
+    return axiosInstance.get<null, ResponseType<T>>(url, {params: params})
+  }
+  static delete<T>(url: string, params?: object): Promise<ResponseType<T>> {
+    return axiosInstance.delete<null, ResponseType<T>>(url, {params: params})
   }
 
-  // post -> data -> { data: {} }
-  static post<T>(url: string, data?: object): Promise<T> {
-    return axiosInstance.post<null, T>(url, data)
+  static post<T>(url: string, data?: object): Promise<ResponseType<T>> {
+    return axiosInstance.post<null, ResponseType<T>>(url, data)
   }
-
-  static delete<T>(url: string, data?: object): Promise<T> {
-    return axiosInstance.delete<null, T>(url, data)
-  }
-
-  static put<T>(url: string, data?: object): Promise<T> {
-    return axiosInstance.put<null, T>(url, data)
+  static put<T>(url: string, data?: object): Promise<ResponseType<T>> {
+    return axiosInstance.put<null, ResponseType<T>>(url, data)
   }
 }
 
