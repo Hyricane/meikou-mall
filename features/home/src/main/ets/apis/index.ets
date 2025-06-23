@@ -1,4 +1,4 @@
-import {  RequestAxios } from 'basic'
+import { RequestAxios } from 'basic'
 import { Banner, CategoryItem, HotResult } from '../viewmodel'
 
 export const getBannerApi = () => {
