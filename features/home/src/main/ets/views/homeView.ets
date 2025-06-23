@@ -1,11 +1,11 @@
 import { axiosInstance, BreakpointConstants, BreakPointType, Logger, RequestAxios, ResponseType } from 'basic'
 import { DiscountGoodsComp, DiscountType } from '../components/DiscountGoodsComp'
 import { MkGoods } from '../components/MkGoods'
-import { Banner, CategoryItem, HotResult, MkGoodsItem, Params } from '../viewmodel'
+import { Banner, CategoryItem, GoodsItemsDataSource, HotResult, MkGoodsItem, Params, } from '../viewmodel'
 import { getBannerApi,getCategoryApi, getHotInVogueApi, getHotOneStopApi, getHotPreferenceApi,
-  getNewApi,
-  getRecommendApi} from '../apis'
+  getNewApi,getRecommendApi} from '../apis'
 import { promptAction } from '@kit.ArkUI'
+import { On } from '@kit.TestKit'
 
 
 @Component
@@ -23,7 +23,7 @@ export struct homeView {
   // 新鲜好物
   @State newGoods: MkGoodsItem[] = []
   // 推荐商品
-  @State recommendGoods: MkGoodsItem[] = []
+  @State recommendGoodsLazy: GoodsItemsDataSource = new GoodsItemsDataSource()
 
   @StorageProp('safeTop') safeTop:number = 0
   @StorageProp(BreakpointConstants.BREAK_POINT_KEY) breakPoint: string = ''
@@ -115,7 +115,7 @@ export struct homeView {
       this.newGoods = resArr[5].value.data.result as MkGoodsItem[]
     }
     if (resArr[6].status == 'fulfilled') {
-      this.recommendGoods = resArr[6].value.data.result as MkGoodsItem[]
+      this.recommendGoodsLazy.reloadData(resArr[6].value.data.result as object[])
     }
   }
 
@@ -123,17 +123,18 @@ export struct homeView {
   page: number = 1
 
   // 滚动触底，加载更多，在 onReachEnd 中调用
-  async getMoreData() {
-    // 页码累加
+  async getMore() {
     this.page++
-    // 允许继续加载的条件
-    if (this.recommendGoods.length < 30) {
-      const res = await getRecommendApi(this.page * 8)//假设8条为一页,每次触底更新8的倍数条数据
-      this.recommendGoods = res.data.result
-    } else {
-      promptAction.showToast({ message: '没有更多啦' })
+    if (this.recommendGoodsLazy.totalCount()>300) {
+      promptAction.showToast({message:'没有更多了'})
+    }else{
+      const res = await getRecommendApi(this.page * 8)
+      // Logger.info(res.data.result)
+      // this.recommendGoods = res.data.result
+      this.recommendGoodsLazy.reloadData(res.data.result as object[])
     }
   }
+
 
 
   @Builder
@@ -345,7 +346,7 @@ export struct homeView {
 
           // 推荐商品
           WaterFlow() {
-            ForEach(this.recommendGoods, (item: MkGoodsItem) => {
+            LazyForEach(this.recommendGoodsLazy, (item: MkGoodsItem) => {
               FlowItem() {
                 MkGoods({ goods: item })
               }
@@ -358,7 +359,19 @@ export struct homeView {
           }).getValue(this.breakPoint))
           .columnsGap(8)
           .rowsGap(10)
-
+          .scrollBar(BarState.On)
+          //实现可视化和滚动需要给瀑布流高度
+          .height('100%')
+          //嵌套滚动
+          .nestedScroll({
+            //下滚时优先父容器
+            scrollForward:NestedScrollMode.PARENT_FIRST,
+            //上滚时优先自身
+            scrollBackward:NestedScrollMode.SELF_FIRST
+          })
+          .onReachEnd(()=>{
+            this.getMore()
+          })
         }
         .padding({
           left: 8,
@@ -370,8 +383,5 @@ export struct homeView {
       .padding({top:this.safeTop})
     }
     .scrollBar(BarState.Off)
-    .onReachEnd(()=>{
-      this.getMoreData()
-    })
   }
 }
