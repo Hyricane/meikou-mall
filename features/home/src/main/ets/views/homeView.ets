@@ -1,7 +1,9 @@
-import { BreakpointConstants, BreakPointType } from 'basic'
+import { axiosInstance, BreakpointConstants, BreakPointType, Logger, RequestAxios, ResponseType } from 'basic'
 import { DiscountGoodsComp, DiscountType } from '../components/DiscountGoodsComp'
 import { MkGoods } from '../components/MkGoods'
 import { Banner, CategoryItem, MkGoodsItem, Params } from '../viewmodel'
+import { url } from '@kit.ArkTS'
+import { getBannerApi,getCategoryApi, getHotInVogueApi, getHotOneStopApi, getHotPreferenceApi } from '../apis'
 
 
 @Component
@@ -79,11 +81,33 @@ export struct homeView {
       "payCount": 0
     })
   }
-
   aboutToAppear(): void {
     // mock数据
     this.mockData()
+    this.getData()
+  }
 
+  // 获取接口数据
+  async getData() {
+    // 轮播图
+    const resBanner = await getBannerApi()
+    this.banners = resBanner.data.result
+
+    // 分类数据
+    const resCategory = await getCategoryApi()
+    this.categories = resCategory.data.result
+
+    // 获取推荐商品数据
+    const resPreference = await getHotPreferenceApi()
+    this.saleGoods = resPreference.data.result.subTypes[0].goodsItems.items
+
+    // 获取爆款推荐数据
+    const resInVogue = await getHotInVogueApi()
+    this.hotGoods = resInVogue.data.result.subTypes[0].goodsItems.items
+
+    // 获取一站买全数据
+    const resOneStop = await getHotOneStopApi()
+    this.oneGoods = resOneStop.data.result.subTypes[0].goodsItems.items
   }
 
   @Builder

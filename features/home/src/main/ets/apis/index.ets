@@ -1,7 +1,25 @@
-import { RequestAxios } from "basic"
-import { Banner } from "../viewmodel"
+import {  RequestAxios } from 'basic'
+import { Banner, CategoryItem, HotResult } from '../viewmodel'
 
-//一般带有固定后缀或前缀
-export const getBannerAPI = () => {
+export const getBannerApi = () => {
   return RequestAxios.get<Banner[]>('/home/banner')
+}
+
+export const getCategoryApi = () => {
+  return RequestAxios.get<CategoryItem[]>('/home/category/head')
+}
+
+// 首页-特惠推荐
+export const getHotPreferenceApi = () => {
+  return RequestAxios.get<HotResult>('/hot/preference')
+}
+
+// 首页-爆款推荐
+export const getHotInVogueApi = () => {
+  return RequestAxios.get<HotResult>('/hot/inVogue')
+}
+
+// 首页-一站买全
+export const getHotOneStopApi = () => {
+  return RequestAxios.get<HotResult>('/hot/oneStop')
 }
