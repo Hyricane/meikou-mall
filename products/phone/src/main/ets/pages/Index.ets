@@ -37,7 +37,7 @@ struct Index {
           if (index == 0) {
             homeView()
           } else if (index == 1) {
-
+            categoryView()
           } else if (index == 2) {
             CartView()
           } else {
