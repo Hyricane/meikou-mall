@@ -1,12 +1,12 @@
-import { axiosInstance, BreakpointConstants, BreakPointType, Logger, RequestAxios, ResponseType } from 'basic'
+import { axiosInstance, BreakpointConstants, BreakPointType, Logger,
+  MkLoading,
+  RequestAxios, ResponseType } from 'basic'
 import { DiscountGoodsComp, DiscountType } from '../components/DiscountGoodsComp'
 import { MkGoods } from '../components/MkGoods'
 import { Banner, CategoryItem, GoodsItemsDataSource, HotResult, MkGoodsItem, Params, } from '../viewmodel'
 import { getBannerApi,getCategoryApi, getHotInVogueApi, getHotOneStopApi, getHotPreferenceApi,
   getNewApi,getRecommendApi} from '../apis'
 import { promptAction } from '@kit.ArkUI'
-import { On } from '@kit.TestKit'
-
 
 @Component
 export struct homeView {
@@ -24,6 +24,8 @@ export struct homeView {
   @State newGoods: MkGoodsItem[] = []
   // 推荐商品
   @State recommendGoodsLazy: GoodsItemsDataSource = new GoodsItemsDataSource()
+  //是否显示加载弹窗
+  @State isLoading:boolean = false
 
   @StorageProp('safeTop') safeTop:number = 0
   @StorageProp(BreakpointConstants.BREAK_POINT_KEY) breakPoint: string = ''
@@ -87,7 +89,9 @@ export struct homeView {
   aboutToAppear(): void {
     // mock数据
     // this.mockData()
+    this.isLoading = true
     this.getData()
+    this.isLoading = false
   }
 
   // 使用 Promise.allSettled 管理多个请求
@@ -128,6 +132,7 @@ export struct homeView {
     if (this.recommendGoodsLazy.totalCount()>300) {
       promptAction.showToast({message:'没有更多了'})
     }else{
+
       const res = await getRecommendApi(this.page * 8)
       // Logger.info(res.data.result)
       // this.recommendGoods = res.data.result
@@ -176,212 +181,217 @@ export struct homeView {
   }
 
   build() {
-    Scroll() {
-      Column() {
-        // 轮播图 + 搜索
-        Stack({ alignContent: Alignment.Top }) {
-          Swiper() {
-            ForEach(this.banners, (item: Banner) => {
-              Image(item.imgUrl)
-            })
-          }
-          .indicator(
-            this.breakPoint == BreakpointConstants.SM ? DotIndicator.dot()
-              .itemWidth(8)
-              .itemHeight(4)
-              .color('#33191919')
-              .selectedItemWidth(24)
-              .selectedItemHeight(4)
-              .selectedColor('#191919') :  false
-          )
-          .displayCount(
-            new BreakPointType({
-              'sm': 1,
-              'md': 2,
-              'lg': 3
-            })
-              .getValue(this.breakPoint)
-          )
-          .itemSpace(
-            new BreakPointType({
-              'sm': 0,
-              'md': 10,
-              'lg': 20
-            })
-              .getValue(this.breakPoint)
-          )
-
-          Row() {
-            Row({ space: 4 }) {
-              Image($r('[basic].media.ic_public_search'))
-                .width(16)
-                .height(16)
-                .fillColor($r('[basic].color.white'))
-              Text('搜索...')
-                .fontSize(14)
-                .fontColor($r('[basic].color.white'))
+    if (this.isLoading == true){
+      MkLoading()
+    } else {
+      Scroll() {
+        Column() {
+          // 轮播图 + 搜索
+          Stack({ alignContent: Alignment.Top }) {
+            Swiper() {
+              ForEach(this.banners, (item: Banner) => {
+                Image(item.imgUrl)
+              })
             }
-            .backgroundColor('#33191919')
-            .width('100%')
-            .height(40)
-            .borderRadius(20)
-            .padding({ left: 12 })
-          }
-          .padding({ left: 16, right: 16 })
-        }
-        .width('100%')
+            .indicator(
+              this.breakPoint == BreakpointConstants.SM ? DotIndicator.dot()
+                .itemWidth(8)
+                .itemHeight(4)
+                .color('#33191919')
+                .selectedItemWidth(24)
+                .selectedItemHeight(4)
+                .selectedColor('#191919') :  false
+            )
+            .displayCount(
+              new BreakPointType({
+                'sm': 1,
+                'md': 2,
+                'lg': 3
+              })
+                .getValue(this.breakPoint)
+            )
+            .itemSpace(
+              new BreakPointType({
+                'sm': 0,
+                'md': 10,
+                'lg': 20
+              })
+                .getValue(this.breakPoint)
+            )
 
-
-        // 分类
-        Column({ space: 10 }) {
-          // 分类
-          List({ space: this.getSpace()}) {
-            ForEach(this.categories, (item: CategoryItem) => {
-              ListItem() {
-                Column() {
-                  Image(item.picture)
-                    .width(56)
-                    .aspectRatio(1)
-                  Text(item.name)
-                    .fontSize(10)
-                    .fontColor('#CC191919')
-                }
-                .width(60)
-                .height(80)
-                .borderRadius(30)
-
-                .clip(true)
-                .backgroundImage(item.picture)
-                .backgroundImageSize(ImageSize.Contain)
-                .backgroundImagePosition(Alignment.Center)
-                .backgroundBlurStyle(
-                  BlurStyle.BACKGROUND_ULTRA_THICK,
-                  { scale: 0.25 }
-                )
+            Row() {
+              Row({ space: 4 }) {
+                Image($r('[basic].media.ic_public_search'))
+                  .width(16)
+                  .height(16)
+                  .fillColor($r('[basic].color.white'))
+                Text('搜索...')
+                  .fontSize(14)
+                  .fontColor($r('[basic].color.white'))
               }
-            })
+              .backgroundColor('#33191919')
+              .width('100%')
+              .height(40)
+              .borderRadius(20)
+              .padding({ left: 12 })
+            }
+            .padding({ left: 16, right: 16 })
           }
           .width('100%')
-          .height(92)
-          .scrollBar(BarState.Off)
-          .listDirection(Axis.Horizontal)
-          .alignListItem(ListItemAlign.Center)
 
-          // 特惠推荐
-          Column({ space: this.getSpace() }) {
-            Image($r('app.media.home_cmd_title'))
-              .width(150)
-              .height(20)
-            Row() {
-              Image($r('app.media.home_cmd_inner'))
-                .width(86)
+
+          // 分类
+          Column({ space: 10 }) {
+            // 分类
+            List({ space: this.getSpace()}) {
+              ForEach(this.categories, (item: CategoryItem) => {
+                ListItem() {
+                  Column() {
+                    Image(item.picture)
+                      .width(56)
+                      .aspectRatio(1)
+                    Text(item.name)
+                      .fontSize(10)
+                      .fontColor('#CC191919')
+                  }
+                  .width(60)
+                  .height(80)
+                  .borderRadius(30)
+
+                  .clip(true)
+                  .backgroundImage(item.picture)
+                  .backgroundImageSize(ImageSize.Contain)
+                  .backgroundImagePosition(Alignment.Center)
+                  .backgroundBlurStyle(
+                    BlurStyle.BACKGROUND_ULTRA_THICK,
+                    { scale: 0.25 }
+                  )
+                }
+              })
+            }
+            .width('100%')
+            .height(92)
+            .scrollBar(BarState.Off)
+            .listDirection(Axis.Horizontal)
+            .alignListItem(ListItemAlign.Center)
+
+            // 特惠推荐
+            Column({ space: this.getSpace() }) {
+              Image($r('app.media.home_cmd_title'))
+                .width(150)
+                .height(20)
+              Row() {
+                Image($r('app.media.home_cmd_inner'))
+                  .width(86)
+                  .height(116)
+                List({ space: 10 }) {
+                  ForEach(this.saleGoods, (item: MkGoodsItem) => {
+                    ListItem() {
+                      DiscountGoodsComp({ goods: item })
+                    }
+                  })
+                }
+                .layoutWeight(1)
+                .width('100%')
                 .height(116)
+                .backgroundColor($r('[basic].color.white'))
+                .borderRadius({
+                  topRight: 8,
+                  bottomRight: 8
+                })
+                .padding({ right: 10, left: 10 })
+                .scrollBar(BarState.Off)
+                .listDirection(Axis.Horizontal)
+              }
+            }
+            .width('100%')
+            .height(166)
+            .backgroundImage($r('app.media.home_cmd_sm'))
+            .backgroundImageSize(ImageSize.Cover)
+            .borderRadius(8)
+            .padding(10)
+            .alignItems(HorizontalAlign.Start)
+
+            // 爆款推荐+一站买全
+            Row({ space: 10 }) {
+              this.DiscountBuilder({
+                title: '爆款推荐',
+                subTitle: '最受欢迎',
+                bg: '#EDF1FB',
+                list: this.hotGoods
+              })
+              this.DiscountBuilder({
+                title: '一站买全',
+                subTitle: '精心优选',
+                bg: '#FCF6EA',
+                list: this.oneGoods
+              })
+            }
+
+            // 新鲜好物
+            Column({ space: this.getSpace() }) {
+              Image($r('app.media.home_new'))
+                .width(146)
+                .height(19)
               List({ space: 10 }) {
-                ForEach(this.saleGoods, (item: MkGoodsItem) => {
+                ForEach(this.newGoods, (item: MkGoodsItem) => {
                   ListItem() {
-                    DiscountGoodsComp({ goods: item })
+                    DiscountGoodsComp({ type: DiscountType.NEW, goods: item })
                   }
                 })
               }
-              .layoutWeight(1)
               .width('100%')
               .height(116)
-              .backgroundColor($r('[basic].color.white'))
-              .borderRadius({
-                topRight: 8,
-                bottomRight: 8
-              })
-              .padding({ right: 10, left: 10 })
               .scrollBar(BarState.Off)
               .listDirection(Axis.Horizontal)
             }
-          }
-          .width('100%')
-          .height(166)
-          .backgroundImage($r('app.media.home_cmd_sm'))
-          .backgroundImageSize(ImageSize.Cover)
-          .borderRadius(8)
-          .padding(10)
-          .alignItems(HorizontalAlign.Start)
+            .width('100%')
+            .height(156)
+            .padding(10)
+            .backgroundColor('#F7EFF5')
+            .borderRadius(8)
+            .alignItems(HorizontalAlign.Start)
 
-          // 爆款推荐+一站买全
-          Row({ space: 10 }) {
-            this.DiscountBuilder({
-              title: '爆款推荐',
-              subTitle: '最受欢迎',
-              bg: '#EDF1FB',
-              list: this.hotGoods
-            })
-            this.DiscountBuilder({
-              title: '一站买全',
-              subTitle: '精心优选',
-              bg: '#FCF6EA',
-              list: this.oneGoods
-            })
-          }
-
-          // 新鲜好物
-          Column({ space: this.getSpace() }) {
-            Image($r('app.media.home_new'))
-              .width(146)
-              .height(19)
-            List({ space: 10 }) {
-              ForEach(this.newGoods, (item: MkGoodsItem) => {
-                ListItem() {
-                  DiscountGoodsComp({ type: DiscountType.NEW, goods: item })
+            // 推荐商品
+            WaterFlow() {
+              LazyForEach(this.recommendGoodsLazy, (item: MkGoodsItem) => {
+                FlowItem() {
+                  MkGoods({ goods: item })
                 }
               })
             }
-            .width('100%')
-            .height(116)
-            .scrollBar(BarState.Off)
-            .listDirection(Axis.Horizontal)
-          }
-          .width('100%')
-          .height(156)
-          .padding(10)
-          .backgroundColor('#F7EFF5')
-          .borderRadius(8)
-          .alignItems(HorizontalAlign.Start)
-
-          // 推荐商品
-          WaterFlow() {
-            LazyForEach(this.recommendGoodsLazy, (item: MkGoodsItem) => {
-              FlowItem() {
-                MkGoods({ goods: item })
-              }
+            .columnsTemplate(new BreakPointType({
+              'sm': '1fr 1fr',
+              'md': '1fr 1fr 1fr',
+              'lg': '1fr 1fr 1fr 1fr'
+            }).getValue(this.breakPoint))
+            .columnsGap(8)
+            .rowsGap(10)
+            .scrollBar(BarState.On)
+            //实现可视化和滚动需要给瀑布流高度
+            .height('100%')
+            //嵌套滚动
+            .nestedScroll({
+              //下滚时优先父容器
+              scrollForward:NestedScrollMode.PARENT_FIRST,
+              //上滚时优先自身
+              scrollBackward:NestedScrollMode.SELF_FIRST
+            })
+            .onReachEnd(()=>{
+              this.getMore()
             })
           }
-          .columnsTemplate(new BreakPointType({
-            'sm': '1fr 1fr',
-            'md': '1fr 1fr 1fr',
-            'lg': '1fr 1fr 1fr 1fr'
-          }).getValue(this.breakPoint))
-          .columnsGap(8)
-          .rowsGap(10)
-          .scrollBar(BarState.On)
-          //实现可视化和滚动需要给瀑布流高度
-          .height('100%')
-          //嵌套滚动
-          .nestedScroll({
-            //下滚时优先父容器
-            scrollForward:NestedScrollMode.PARENT_FIRST,
-            //上滚时优先自身
-            scrollBackward:NestedScrollMode.SELF_FIRST
-          })
-          .onReachEnd(()=>{
-            this.getMore()
+          .padding({
+            left: 8,
+            right: 8,
+            bottom: 10,
+            top: 10
           })
         }
-        .padding({
-          left: 8,
-          right: 8,
-          bottom: 10,
-          top: 10
-        })
+        .padding({top:this.safeTop})
       }
-      .padding({top:this.safeTop})
+      .scrollBar(BarState.Off)
+      .transition(TransitionEffect.OPACITY.animation({ duration: 200 }))
     }
-    .scrollBar(BarState.Off)
   }
 }
